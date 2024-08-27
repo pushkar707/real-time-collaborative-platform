@@ -2,7 +2,7 @@ import express, { Request, Response } from "express"
 
 const app = express()
 app.get('/', (req: Request, res: Response) => {
-    return res.send('API healthyv1')
+    return res.send('API healthy v1')
 })
 
 app.listen(3000, () => {
