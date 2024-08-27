@@ -39,4 +39,9 @@ jobs:
 
       - name: Restart the application
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'source ~/.bashrc && /home/ubuntu/.nvm/versions/node/v20.9.0/bin/pm2 restart all'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
+            export NVM_DIR="$HOME/.nvm" &&
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" &&
+            nvm use 20.9.0 &&
+            /home/ubuntu/.nvm/versions/node/v20.9.0/bin/pm2 restart all
+          '
