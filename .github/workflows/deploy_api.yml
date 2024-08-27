@@ -1,0 +1,41 @@
+name: api-deployment
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'api/**'
+
+jobs:
+  api-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd api
+          npm install
+
+      - name: Build project
+        run: |
+          cd api
+          npm run build
+      
+      - name: Upload code to EC2
+        run: |
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          rsync -avz --delete api/node_modules api/dist ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/real-time-collaborative-platform
+
+      - name: Restart the application
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'cd /home/ubuntu/real-time-collaborative-platform && pm2 restart all'
