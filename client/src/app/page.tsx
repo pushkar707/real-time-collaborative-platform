@@ -16,9 +16,8 @@ export default function Home() {
       const data = JSON.parse(event.data)
       console.log(data);
       if (data['roomId']) {
-        console.log("Room id found");
-        // localStorage.setItem('gameData', data)
-        // router.push('/game/'+data['roomId'])
+        localStorage.setItem('gameData', JSON.stringify({ cards: data.cards, players: data.players }))
+        router.push('/game/' + data['roomId'])
       }
     }
   }, [])
