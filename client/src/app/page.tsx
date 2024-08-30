@@ -17,8 +17,8 @@ export default function Home() {
       console.log(data);
       if (data['roomId']) {
         console.log("Room id found");
-        localStorage.setItem('gameData', data)
-        router.push('/game/'+data['roomId'])
+        // localStorage.setItem('gameData', data)
+        // router.push('/game/'+data['roomId'])
       }
     }
   }, [])

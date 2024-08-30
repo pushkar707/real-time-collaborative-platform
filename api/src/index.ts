@@ -1,7 +1,9 @@
 import express, { Request, Response } from "express"
 import Websocket, { WebSocketServer } from "ws"
 import createRoomId from "./utils/createRoomId";
-import { getPlayerCardset } from "./utils/getCards";
+import createDeck from "./utils/createDeck";
+import { Deck } from "./utils/Deck";
+import { Rooms } from "./utils/interfaces";
 
 const app = express()
 const server = app.listen(3000, () => {
@@ -9,7 +11,7 @@ const server = app.listen(3000, () => {
 })
 
 const wss = new WebSocketServer({ server })
-export const rooms = new Map()
+export const rooms:Rooms = new Map()
 
 wss.on("connection", (socket) => {
     socket.on("message", (message: string) => {
@@ -17,12 +19,13 @@ wss.on("connection", (socket) => {
 
         if (parseMsg.type === 'create-room') {
             const roomId = createRoomId()
-            const cards: any = getPlayerCardset()
-            const room = new Map();
+            const deck = new Deck()
+            const cards: any = deck.getPlayerCardset()
+            const players = new Map();
             const player = { name: parseMsg.name, cards }
-            room.set(socket, player)
-            rooms.set(roomId, room)
-            socket.send(JSON.stringify({ message: 'New room created', roomId, cards, players: [player] }))
+            players.set(socket, player)
+            rooms.set(roomId, { players, deck })
+            socket.send(JSON.stringify({ message: 'New room created', roomId, cards, players: [player.name] }))
             console.log(rooms);
         }
 
@@ -30,20 +33,21 @@ wss.on("connection", (socket) => {
             const roomId = parseMsg.roomId
             if (!rooms.has(roomId))
                 socket.send('Invalid room Id, please try again')
-            const roomMembers: Map<Websocket, {}> = rooms.get(roomId);
-            if(!roomMembers)
-                socket.send(JSON.stringify({error: 'Invalid room id'}))
-            const cards = getPlayerCardset()
-            roomMembers.set(socket, { name: parseMsg.name, cards })
+
+            const room: any = rooms.get(roomId);
+            if (!room)
+                socket.send(JSON.stringify({ error: 'Invalid room id' }))
+
+            const cards = room.deck.getPlayerCardset()
+            room.players.set(socket, { name: parseMsg.name, cards })
             const players: any[] = []
-            roomMembers.forEach((player, socket) => { // value, key
-                players.push(player)
+            room.players.forEach((player: any, socket: Websocket) => {
+                players.push(player.name)
             })
             socket.send(JSON.stringify({ message: 'Connected to room', roomId, cards, players }))
-            rooms.set(roomId, roomMembers)
+            rooms.set(roomId, room)
             console.log(rooms);
         }
-
     })
     socket.send(JSON.stringify({ message: 'Connected to ws server' }))
 })
