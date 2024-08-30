@@ -11,7 +11,7 @@ const server = app.listen(3000, () => {
 })
 
 const wss = new WebSocketServer({ server })
-export const rooms:Rooms = new Map()
+export const rooms: Rooms = new Map()
 
 wss.on("connection", (socket) => {
     socket.on("message", (message: string) => {
@@ -25,7 +25,7 @@ wss.on("connection", (socket) => {
             const player = { name: parseMsg.name, cards }
             players.set(socket, player)
             rooms.set(roomId, { players, deck })
-            socket.send(JSON.stringify({ message: 'New room created', roomId, cards, players: [player.name] }))
+            socket.send(JSON.stringify({ message: 'New room created', roomId, cards, players: [{ name: player.name, cardRemaining: player.cards.length }] }))
             console.log(rooms);
         }
 
@@ -42,7 +42,7 @@ wss.on("connection", (socket) => {
             room.players.set(socket, { name: parseMsg.name, cards })
             const players: any[] = []
             room.players.forEach((player: any, socket: Websocket) => {
-                players.push(player.name)
+                players.push({ name: player.name, cardRemaining: player.cards.length })
             })
             socket.send(JSON.stringify({ message: 'Connected to room', roomId, cards, players }))
             rooms.set(roomId, room)
