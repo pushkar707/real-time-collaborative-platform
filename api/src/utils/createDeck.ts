@@ -10,13 +10,13 @@ export default () => {
     const deck: Card[] = []
     colors.forEach(color => {
         numbers.forEach(number => {
-            deck.push({ type: 'color-number', color, number })
+            deck.push({ type: 'number', color, number })
             if (number !== '0')
-                deck.push({ type: 'color-number', color, number })
+                deck.push({ type: 'number', color, number })
         })
         actions.forEach(action => {
             for (let i = 0; i < 2; i++)
-                deck.push({ type: 'color-action', color, action })
+                deck.push({ type: 'action', color, action })
         })
     })
 

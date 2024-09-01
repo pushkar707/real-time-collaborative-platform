@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd api
-          npm install --production
+          npm install
 
       - name: Build project
         run: |

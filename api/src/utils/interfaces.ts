@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 import { Deck } from "./Deck";
 export interface Card {
-    type: 'color-number' | 'color-action' | 'wild'
+    type: 'number' | 'action' | 'wild'
     color?: string;
     number?: string;
     action?: string;

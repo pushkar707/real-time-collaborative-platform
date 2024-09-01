@@ -1,22 +1,25 @@
 "use client"
 import { FormEvent, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useRecoilState } from "recoil"
+import Socket from "./atoms/Socket"
 
 export default function Home() {
-  const [socket, setsocket] = useState<WebSocket>()
+  const [socket, setsocket] = useRecoilState(Socket)
   const router = useRouter()
 
   useEffect(() => {
     const socket = new WebSocket('ws://localhost:3000')
     socket.onopen = () => {
       setsocket(socket)
+      localStorage.setItem('socket', JSON.stringify(socket)) // Add it in global context alternatively
     }
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
       console.log(data);
       if (data['roomId']) {
-        localStorage.setItem('gameData', JSON.stringify({ cards: data.cards, players: data.players }))
+        localStorage.setItem('gameData', JSON.stringify(data))
         router.push('/game/' + data['roomId'])
       }
     }
