@@ -89,7 +89,7 @@ const Page = () => {
             return <img className={`w-[8vw] h-[22vh] rounded-xl ${index !== 0 && '-mt-[17vh]'}`} src="/card.png" alt="" />
           })}
         </div>
-        <p className='text-center font-medium text-lg'>{gameData.players.find((pl: any) => pl.id === left).name}</p>
+        <p className={`text-center font-medium text-lg ${gameData.lastTurn === left && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === left).name}</p>
       </div> : ''}
 
       {right ? <div className='flex absolute right-24 h-[90%] flex-col justify-center items-center gap-y-1.5'>
@@ -98,7 +98,7 @@ const Page = () => {
             return <img className={`w-[8vw] h-[22vh] rounded-xl ${index !== 0 && '-mt-[17vh]'}`} src="/card.png" alt="" />
           })}
         </div>
-        <p className='text-center font-medium text-lg'>{gameData.players.find((pl: any) => pl.id === right).name}</p>
+        <p className={`text-center font-medium text-lg ${gameData.lastTurn === right && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === right).name}</p>
       </div> : ''}
     </div>
   )
