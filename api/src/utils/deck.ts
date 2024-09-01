@@ -1,5 +1,4 @@
 import createDeck from "./createDeck"
-import deck from "./createDeck"
 import { Card } from "./interfaces"
 
 export class Deck {

@@ -2,7 +2,7 @@ import { Card } from "./interfaces";
 
 const colors = ['red', 'yellow', 'green', 'blue'];
 const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const actions = ['skip', 'reverse', 'draw-Two'];
+const actions = ['skip', 'reverse', 'draw-two'];
 const wilds = ['wild', 'draw-four'];
 
 

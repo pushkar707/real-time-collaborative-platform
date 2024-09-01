@@ -2,7 +2,7 @@
 import { FormEvent, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useRecoilState } from "recoil"
-import Socket from "./atoms/Socket"
+import Socket from "./atoms/socket"
 
 export default function Home() {
   const [socket, setsocket] = useRecoilState(Socket)
