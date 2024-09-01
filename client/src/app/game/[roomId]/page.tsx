@@ -37,11 +37,10 @@ const Page = () => {
     else if (length === 4) {
       setLeft(activePlayerId + 1 <= length ? activePlayerId + 1 : 1)
       setTop(activePlayerId + 2 <= length ? activePlayerId + 2 : activePlayerId - 2)
-      setRight(activePlayerId - 1 <= length ? activePlayerId - 1 : 1)
+      setRight(0 < activePlayerId - 1 ? activePlayerId - 1 : length)
     }
   }, [gameData])
 
-  // activePlayerId, all other players id, total players, length - activePlayerId
   return (
     gameData && <div className='flex h-screen overflow-hidden items-center flex-col p-12 justify-between relative'>
       {top ? <div className='flex h-full flex-col justify-center items-center gap-y-1.5'>
@@ -65,7 +64,7 @@ const Page = () => {
             else if (card.type === 'action')
               return <ActionCard action={card.action} color={card.color} isFirstCard={index === 0} />
             else if (card.type === 'wild')
-              return <WildCard type={card.type} isFirstCard={index === 0} />
+              return <WildCard type={card.wild} isFirstCard={index === 0} />
           })}
         </div>
       </div>
