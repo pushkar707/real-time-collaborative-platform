@@ -12,6 +12,17 @@ export class Deck {
         return this.deck.splice(Math.floor(Math.random() * this.deck.length), 1)[0]
     }
 
+    getFirstCard = () => {
+        while (true) {
+            const card = this.getOneCard()
+            if (card.type === 'number') {
+                console.log(this.deck.length);
+                return card
+            }
+            this.deck.push(card)
+        }
+    }
+
     getPlayerCardset = () => {
         const cards = []
         for (let i = 0; i < 7; i++)

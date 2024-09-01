@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express"
 import Websocket, { WebSocketServer } from "ws"
 import createRoomId from "./utils/createRoomId";
-import createDeck from "./utils/createDeck";
 import { Deck } from "./utils/Deck";
 import { Rooms } from "./utils/interfaces";
 
@@ -30,33 +29,59 @@ wss.on("connection", (socket) => {
             // Creating room and saving its details in-memory
             const roomId = createRoomId()
             rooms.set(roomId, { players, deck })
-
-            socket.send(JSON.stringify({ message: 'New room created', roomId, name: playerName, id, cards, players: [{ name: player.name, cardsRemaining: player.cards.length }] }))
-            console.log(rooms);
+            socket.send(JSON.stringify({ message: 'New room created', type: 'new', roomId, name: playerName, id, cards, players: [{ name: player.name, cardsRemaining: player.cards.length }] }))
         }
 
         else if (parseMsg.type === 'join-room') {
             const roomId = parseMsg.roomId
             // validate roomId
             const room: any = rooms.get(roomId);
-            if (!room)
-                socket.send(JSON.stringify({ error: 'Invalid room id' }))
+            if (!room || room.hasGameStarted)
+                return socket.send(JSON.stringify({ type: 'error', message: 'Invalid room id' }))
 
-            // Creating and adding player 2 that just joined
+            // Creating and adding player that just joined
             const cards = room.deck.getPlayerCardset()
             const playerName = parseMsg.name
             const id = room.players.size + 1
             room.players.set(socket, { name: playerName, cards, id })
             rooms.set(roomId, room)
-            console.log(rooms);
 
-            // creating response for client
+            // creating response
             const clientResponsePlayers: any[] = []
             room.players.forEach((player: any, socket: Websocket) => {
                 clientResponsePlayers.push({ name: player.name, id: player.id, cardsRemaining: player.cards.length })
             })
+
+            // sending new players details to all sockets
             room.players.forEach((player: any, socket: Websocket) => {
-                socket.send(JSON.stringify({ message: 'Connected to room', roomId, name: player.name, id:player.id, cards:player.cards, players: clientResponsePlayers }))
+                socket.send(JSON.stringify({ message: 'Connected to room', type: 'new', roomId, name: player.name, id: player.id, cards: player.cards, players: clientResponsePlayers }))
+            })
+        }
+
+        else if (parseMsg.type === 'start-game') {
+            const roomId = parseMsg.roomId
+            // validate roomId
+            const room: any = rooms.get(roomId);
+            if (!room)
+                return socket.send(JSON.stringify({ type: 'error', message: 'Invalid room id' }))
+
+            const socketVerified = Array.from(room.players.keys()).find((pl: any) => pl === socket)
+            if (!socketVerified)
+                return socket.send(JSON.stringify({ type: 'error', message: 'Unautorized' }))
+
+            // validating enough players in room
+            if (room.players.length <= 1)
+                socket.send(JSON.stringify({ type: 'error', message: 'You need 2 to 4 players to play' }))
+
+            // creating firstCard and firstTurn
+            const lastCard = room.deck.getOneCard()
+            const lastTurn = Math.floor(Math.random() * room.players.size) + 1
+
+            room['hasGameStarted'] = true
+            rooms.set(roomId, room)
+
+            room.players.forEach((player: any, socket: Websocket) => {
+                socket.send(JSON.stringify({ message: 'Game started', type: 'append', lastCard, lastTurn }))
             })
         }
     })
