@@ -79,11 +79,11 @@ const Page = () => {
 
       <div className='flex items-center gap-2'>
         <img className='w-[8vw] h-[22vh] rounded-xl' src="/card.png" alt="" onClick={drawOneCard} />
-        {gameData.lastCard ? <Card card={gameData.lastCard} index={0} /> : ''}
+        {gameData.lastCard ? <Card card={gameData.lastCard} index={0} isCenterCard={true} /> : ''}
       </div>
 
       <div>
-        <p className={`text-center font-medium text-lg mb-1.5 ${gameData.lastTurn === gameData.id && 'font-semibold underline'}`}>
+        <p className={`text-center font-medium text-lg mb-2 ${gameData.lastTurn === gameData.id && 'font-semibold underline'}`}>
           {gameData.name}
           {(!gameData.lastTurn && (gameData.id === 1)) ? <button onClick={startGame} className='px-2 py-1 bg-blue-500 text-white ml-3 rounded'>Start game</button> : ''}
         </p>

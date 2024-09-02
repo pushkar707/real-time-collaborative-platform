@@ -1,8 +1,8 @@
 import React from 'react'
 
-const WildCard = ({ type, isFirstCard }: { type: 'wild' | 'draw-four', isFirstCard: boolean }) => {
+const WildCard = ({ type }: { type: 'wild' | 'draw-four'}) => {
     return (
-        <div className={`w-[8vw] text-white h-[20vh] outline-slate-800 outline-1 outline ${!isFirstCard && '-ml-[4.5vw]'} rounded-xl relative`}>
+        <div className={`w-full h-full rounded-xl relative flex justify-center items-center`}>
             <img src={type === 'wild' ? '/wild.jpeg' : '/draw-four.png'} className='w-full max-h-full' />
         </div>
     )

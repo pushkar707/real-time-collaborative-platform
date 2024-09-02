@@ -25,3 +25,22 @@ body {
     text-wrap: balance;
   }
 }
+
+.move-avaliable {
+  animation: upDown 1.5s ease-in-out infinite;
+  outline-width: 2px !important;
+  margin-top: -2px;
+  cursor: pointer;
+}
+
+@keyframes upDown {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px); /* Move down by 50px */
+  }
+  100% {
+    transform: translateY(0); /* Move back to the original position */
+  }
+}
