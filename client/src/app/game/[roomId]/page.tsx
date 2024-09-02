@@ -25,6 +25,10 @@ const Page = () => {
         return { ...prev, ...data }
       }) : ''
     })
+
+    window.addEventListener('beforeunload', (e) => {
+      e.returnValue = 'You will be exited from the game if you leave';
+    })
   }, [])
 
   useEffect(() => {

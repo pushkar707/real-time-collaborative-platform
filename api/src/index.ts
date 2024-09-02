@@ -3,6 +3,7 @@ import Websocket, { WebSocketServer } from "ws"
 import createRoomId from "./utils/createRoomId";
 import { Deck } from "./utils/Deck";
 import { Rooms } from "./utils/interfaces";
+import { verifyRoomId } from "./utils/utils";
 
 const app = express()
 const server = app.listen(3000, () => {
@@ -60,21 +61,16 @@ wss.on("connection", (socket) => {
 
         else if (parseMsg.type === 'start-game') {
             const roomId = parseMsg.roomId
-            // validate roomId
-            const room: any = rooms.get(roomId);
+            const room = verifyRoomId(rooms, roomId, socket)
             if (!room)
-                return socket.send(JSON.stringify({ type: 'error', message: 'Invalid room id' }))
-
-            const socketVerified = Array.from(room.players.keys()).find((pl: any) => pl === socket)
-            if (!socketVerified)
-                return socket.send(JSON.stringify({ type: 'error', message: 'Unautorized' }))
+                return
 
             // validating enough players in room
             if (room.players.length <= 1)
                 socket.send(JSON.stringify({ type: 'error', message: 'You need 2 to 4 players to play' }))
 
             // creating firstCard and firstTurn
-            const lastCard = room.deck.getOneCard()
+            const lastCard = room.deck.getFirstCard()
             const lastTurn = Math.floor(Math.random() * room.players.size) + 1
 
             room['hasGameStarted'] = true
