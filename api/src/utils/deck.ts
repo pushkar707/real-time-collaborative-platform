@@ -12,6 +12,14 @@ export class Deck {
         return this.deck.splice(Math.floor(Math.random() * this.deck.length), 1)[0]
     }
 
+    getFourCards = () => {
+        const cards = []
+        for(let i=0; i<4; i++){
+            cards.push(this.getOneCard())
+        }
+        return cards
+    }
+
     getFirstCard = () => {
         while (true) {
             const card = this.getOneCard()

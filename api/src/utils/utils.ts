@@ -24,3 +24,13 @@ export const createPlayersResponse = (room: Room) => {
     })
     return clientResponsePlayers
 }
+
+export const getNextTurn = (room: Room) => {
+    if (!room.nextTurn)
+        return 0
+
+    if (room.rotation === 'clockwise')
+        return room.nextTurn === room.players.size ? 1 : room.nextTurn + 1
+    else
+        return room.nextTurn === 1 ? room.players.size : room.nextTurn - 1
+}

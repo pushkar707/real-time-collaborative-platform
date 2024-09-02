@@ -1,5 +1,6 @@
 import { WebSocket } from "ws";
 import { Deck } from "./Deck";
+
 export interface Card {
     type: 'number' | 'action' | 'wild'
     color?: string;
@@ -8,9 +9,19 @@ export interface Card {
     wild?: string;
 }
 
+export interface Player {
+    name: string;
+    cards: Card[];
+    id: number
+}
+
 export interface Room {
-    players: Map<WebSocket, { name: string, cards: Card }>
-    deck: Deck
+    players: Map<WebSocket, Player>;
+    deck: Deck;
+    hasGameStarted?: boolean;
+    nextTurn?: number;
+    lastCard?: Card;
+    rotation?: 'clockwise' | 'anticlockwise';
 }
 
 export type Rooms = Map<string, Room>

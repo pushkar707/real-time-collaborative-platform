@@ -10,6 +10,7 @@ import React, { act, useEffect, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 
 const Page = () => {
+  // add a check where activeUser is allowed to move only when they receive a response
   const [gameData, setgameData] = useRecoilState(gameDataAtom)
   const socket = useRecoilValue(Socket)
   const [left, setLeft] = useState<number>(0)
@@ -49,7 +50,6 @@ const Page = () => {
     }
 
     console.log(gameData);
-
   }, [gameData])
 
   const startGame = () => {
@@ -60,6 +60,7 @@ const Page = () => {
   }
 
   const drawOneCard = () => {
+    // pending: make sure user doesn't draw the card twice
     if (!gameData.lastCard)
       return
 
@@ -74,7 +75,7 @@ const Page = () => {
             return <img className={`w-[8vw] h-[22vh] rounded-xl ${index !== 0 && '-ml-[4.5vw]'}`} src="/card.png" alt="" />
           })}
         </div>
-        <p className={`text-center font-medium text-lg mt-1.5 ${gameData.lastTurn === top && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === top).name}</p>
+        <p className={`text-center font-medium text-lg mt-1.5 ${gameData.nextTurn === top && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === top).name}</p>
       </div> : <div></div>}
 
       <div className='flex items-center gap-2'>
@@ -83,9 +84,9 @@ const Page = () => {
       </div>
 
       <div>
-        <p className={`text-center font-medium text-lg mb-2 ${gameData.lastTurn === gameData.id && 'font-semibold underline'}`}>
+        <p className={`text-center font-medium text-lg mb-2 ${gameData.nextTurn === gameData.id && 'font-semibold underline'}`}>
           {gameData.name}
-          {(!gameData.lastTurn && (gameData.id === 1)) ? <button onClick={startGame} className='px-2 py-1 bg-blue-500 text-white ml-3 rounded'>Start game</button> : ''}
+          {(!gameData.nextTurn && (gameData.id === 1)) ? <button onClick={startGame} className='px-2 py-1 bg-blue-500 text-white ml-3 rounded'>Start game</button> : ''}
         </p>
         <div className='flex'>
           {gameData.cards.map((card: any, index: number) => {
@@ -100,7 +101,7 @@ const Page = () => {
             return <img className={`w-[8vw] h-[22vh] rounded-xl ${index !== 0 && '-mt-[17vh]'}`} src="/card.png" alt="" />
           })}
         </div>
-        <p className={`text-center font-medium text-lg ${gameData.lastTurn === left && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === left).name}</p>
+        <p className={`text-center font-medium text-lg ${gameData.nextTurn === left && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === left).name}</p>
       </div> : ''}
 
       {right ? <div className='flex absolute right-24 h-[90%] flex-col justify-center items-center gap-y-1.5'>
@@ -109,7 +110,7 @@ const Page = () => {
             return <img className={`w-[8vw] h-[22vh] rounded-xl ${index !== 0 && '-mt-[17vh]'}`} src="/card.png" alt="" />
           })}
         </div>
-        <p className={`text-center font-medium text-lg ${gameData.lastTurn === right && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === right).name}</p>
+        <p className={`text-center font-medium text-lg ${gameData.nextTurn === right && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === right).name}</p>
       </div> : ''}
     </div>
   )

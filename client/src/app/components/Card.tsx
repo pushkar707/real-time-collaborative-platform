@@ -8,15 +8,15 @@ import socketAtom from '../atoms/socket'
 
 const Card = ({ card, index, isCenterCard = false }: { card: any, index: number, isCenterCard?: boolean }) => {
 
-    const [gameData, setgameData] = useRecoilState(gameDataAtom)
+    const gameData = useRecoilValue(gameDataAtom)
     const socket = useRecoilValue(socketAtom)
     useEffect(() => {
         if (gameData.lastCard) {
-            console.log(gameData.lastCard);
         }
     }, [gameData])
 
-    const isEligibleCard = !isCenterCard && gameData?.lastTurn && gameData?.lastTurn === gameData?.id && (
+
+    const isEligibleCard = !isCenterCard && gameData?.nextTurn && gameData?.nextTurn === gameData?.id && (
         (card.type === 'wild') || (card.color && (card.color === gameData?.lastCard?.color)) || (card.number && (card.number === gameData?.lastCard?.number)) || (card.action && (card.action === gameData?.lastCard?.action))
     )
 
@@ -24,7 +24,7 @@ const Card = ({ card, index, isCenterCard = false }: { card: any, index: number,
         if (!isEligibleCard)
             return
 
-        socket?.send(JSON.stringify({ type: 'move', move: 'throw-card', roomId: gameData.roomId, card }))
+        socket?.send(JSON.stringify({ type: 'move', move: 'throw-card', roomId: gameData.roomId, card, wildColor: card.type === 'wild' ? 'green' : null }))
     }
 
 
