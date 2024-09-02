@@ -3,7 +3,7 @@ import Websocket, { WebSocketServer } from "ws"
 import createRoomId from "./utils/createRoomId";
 import { Deck } from "./utils/Deck";
 import { Rooms } from "./utils/interfaces";
-import { verifyRoomId } from "./utils/utils";
+import { createPlayersResponse, verifyRoomId } from "./utils/utils";
 
 const app = express()
 const server = app.listen(3000, () => {
@@ -47,15 +47,9 @@ wss.on("connection", (socket) => {
             room.players.set(socket, { name: playerName, cards, id })
             rooms.set(roomId, room)
 
-            // creating response
-            const clientResponsePlayers: any[] = []
-            room.players.forEach((player: any, socket: Websocket) => {
-                clientResponsePlayers.push({ name: player.name, id: player.id, cardsRemaining: player.cards.length })
-            })
-
             // sending new players details to all sockets
             room.players.forEach((player: any, socket: Websocket) => {
-                socket.send(JSON.stringify({ message: 'Connected to room', type: 'new', roomId, name: player.name, id: player.id, cards: player.cards, players: clientResponsePlayers }))
+                socket.send(JSON.stringify({ message: 'Connected to room', type: 'new', roomId, name: player.name, id: player.id, cards: player.cards, players: createPlayersResponse(room) }))
             })
         }
 
@@ -73,6 +67,9 @@ wss.on("connection", (socket) => {
             const lastCard = room.deck.getFirstCard()
             const lastTurn = Math.floor(Math.random() * room.players.size) + 1
 
+            room.lastCard = lastCard
+            room.lastTurn = lastTurn
+
             room['hasGameStarted'] = true
             rooms.set(roomId, room)
 
@@ -80,6 +77,35 @@ wss.on("connection", (socket) => {
                 socket.send(JSON.stringify({ message: 'Game started', type: 'append', lastCard, lastTurn }))
             })
         }
+
+        else if (parseMsg.type === 'move') {
+            const roomId = parseMsg.roomId
+            const room = verifyRoomId(rooms, roomId, socket)
+            if (!room)
+                return
+
+            const currPlayer = room.players.get(socket)
+            if (currPlayer.id !== room.lastTurn)
+                return socket.send(JSON.stringify({ message: 'Invlid turn' }))
+
+            if (!room.hasGameStarted)
+                return socket.send(JSON.stringify({ message: 'Game has not started yet' }))
+
+            if (parseMsg.move === 'draw-card') {
+                const card = room.deck.getOneCard();
+                currPlayer.cards = [...currPlayer.cards, card]
+                room.players.set(socket, currPlayer)
+                socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards }))
+            }
+
+            rooms.set(roomId, room)
+            room.players.forEach((player: any, socket: Websocket) => {
+                socket.send(JSON.stringify({ message: `Player ${currPlayer.name} drawed a card`, type: 'append', players: createPlayersResponse(room) }))
+            })
+        }
+
+        console.log(rooms);
+
     })
 })
 

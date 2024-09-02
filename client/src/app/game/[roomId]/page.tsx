@@ -54,9 +54,16 @@ const Page = () => {
 
   const startGame = () => {
     if (gameData.players.length <= 1)
-      alert('You need 2 to 4 players to start')
+      return alert('You need 2 to 4 players to start')
 
     socket?.send(JSON.stringify({ type: 'start-game', roomId: gameData.roomId }))
+  }
+
+  const drawOneCard = () => {
+    if (!gameData.lastCard)
+      return
+
+    socket?.send(JSON.stringify({ type: 'move', roomId: gameData.roomId, move: 'draw-card' }))
   }
 
   return (
@@ -71,7 +78,7 @@ const Page = () => {
       </div> : <div></div>}
 
       <div className='flex items-center gap-2'>
-        <img className='w-[8vw] h-[22vh] rounded-xl' src="/card.png" alt="" />
+        <img className='w-[8vw] h-[22vh] rounded-xl' src="/card.png" alt="" onClick={drawOneCard} />
         {gameData.lastCard ? <Card card={gameData.lastCard} index={0} /> : ''}
       </div>
 

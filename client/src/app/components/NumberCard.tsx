@@ -7,7 +7,7 @@ const ColorNumberCard = ({color, number, isFirstCard}:{color:string, number: str
         <span className='absolute left-0.5 top-0 text-2xl'>{number}</span>
         <div className='bg-white text-5xl rotate-45 w-[80px] h-[80px] justify-center items-center'>
             <div className='-rotate-45'>
-                <p className={`text-8xl text-${color}-500 w-fit ml-1 -mt-2 scale-[0.83] font-semibold`}>{number}</p>
+                <p className={`text-8xl text-${color}-500 w-fit ml-2.5 -mt-2 scale-[0.83] font-semibold`}>{number}</p>
                 {number == '6' ? <div className={`bg-${color}-500 h-1 w-10 -mt-5 ml-3.5`}></div> : ''}
 
             </div>

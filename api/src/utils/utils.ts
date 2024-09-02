@@ -1,4 +1,4 @@
-import { Rooms } from "./interfaces";
+import { Room, Rooms } from "./interfaces";
 import { WebSocket } from "ws"
 
 export const verifyRoomId = (rooms: Rooms, roomId: string, socket: WebSocket) => {
@@ -15,4 +15,12 @@ export const verifyRoomId = (rooms: Rooms, roomId: string, socket: WebSocket) =>
     }
 
     return room
+}
+
+export const createPlayersResponse = (room: Room) => {
+    const clientResponsePlayers: any[] = []
+    room.players.forEach((player: any, socket: WebSocket) => {
+        clientResponsePlayers.push({ name: player.name, id: player.id, cardsRemaining: player.cards.length })
+    })
+    return clientResponsePlayers
 }
