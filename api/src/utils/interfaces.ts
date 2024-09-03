@@ -22,6 +22,7 @@ export interface Room {
     nextTurn?: number;
     lastCard?: Card;
     rotation?: 'clockwise' | 'anticlockwise';
+    cardDrawn?: boolean;
 }
 
 export type Rooms = Map<string, Room>

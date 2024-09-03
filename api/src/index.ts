@@ -75,7 +75,7 @@ wss.on("connection", (socket) => {
             rooms.set(roomId, room)
 
             room.players.forEach((player: Player, socket: Websocket) => {
-                socket.send(JSON.stringify({ message: 'Game started', type: 'append', hasGameStarted:true ,lastCard, nextTurn }))
+                socket.send(JSON.stringify({ message: 'Game started', type: 'append', hasGameStarted: true, lastCard, nextTurn }))
             })
         }
 
@@ -93,13 +93,15 @@ wss.on("connection", (socket) => {
                 return socket.send(JSON.stringify({ message: 'Game has not started yet' }))
 
             if (parseMsg.move === 'draw-card') {
+                if(room['cardDrawn'])
+                    return socket.send(JSON.stringify({type: 'error', message: 'You can only draw one card.'}))
                 // add check user can draw only one card, in-case they receive a correct card
                 const card = room.deck.getOneCard();
                 currPlayer.cards = [...currPlayer.cards, card]
+                room['cardDrawn'] = true
 
                 // checking if users has any card after drawing, if not go to next player
                 let noEligibleCard = true;
-
                 for (let card of currPlayer.cards) {
                     if ((card.type === 'wild') || (card.color && (card.color === room.lastCard.color)) || (card.number && (card.number === room.lastCard.number)) || (card.action && (card.action === room.lastCard.action))) {
                         noEligibleCard = false
@@ -109,16 +111,18 @@ wss.on("connection", (socket) => {
                 if (noEligibleCard)
                     room.nextTurn = getNextTurn(room)
 
-                socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards }))
+                socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards, cardDrawn:true }))
             }
             else if (parseMsg.move === 'throw-card') {
+                room['cardDrawn'] = false
                 // pending: verify that user has thrown correct card
                 const card: Card = parseMsg.card
 
                 room.lastCard = card
+                room.deck.throwCard(card)
                 const removedCardIndex = currPlayer.cards.findIndex((playerCard: Card) => JSON.stringify(playerCard) === JSON.stringify(card))
                 currPlayer.cards.splice(removedCardIndex, 1)
-                socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards }))
+                socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards, cardDrawn:false }))
 
                 // throws an action card
                 if (card.type === 'action') {
@@ -170,12 +174,10 @@ wss.on("connection", (socket) => {
 
             if (currPlayer.cards.length === 0) {
                 return room.players.forEach((player: Player, socket: Websocket) => {
-                    return socket.send(JSON.stringify({ message: `Player ${currPlayer.name} won the game`, isAnnouncement:true ,type: 'append', lastCard: room.lastCard, players: createPlayersResponse(room) }))
+                    return socket.send(JSON.stringify({ message: `Player ${currPlayer.name} won the game`, isAnnouncement: true, type: 'append', lastCard: room.lastCard, players: createPlayersResponse(room) }))
                 })
             }
         }
-
-        console.log(rooms);
     })
 })
 
@@ -184,9 +186,6 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 // TODO
-// Game over logic
-// Replenish deck if no more cards available to draw
-// Allow user to draw only one card when receiving correct card
 // Debouncing on client to make make new request only once response received
 // responsive UI
 // share link and popup to join the game

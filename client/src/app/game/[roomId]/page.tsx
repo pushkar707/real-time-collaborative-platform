@@ -74,6 +74,8 @@ const Page = () => {
     if (!gameData.lastCard)
       return
 
+    if (gameData.cardDrawn)
+      return alert('You can only draw one card in a turn')
     socket?.send(JSON.stringify({ type: 'move', roomId: gameData.roomId, move: 'draw-card' }))
   }
 
