@@ -75,7 +75,7 @@ wss.on("connection", (socket) => {
             rooms.set(roomId, room)
 
             room.players.forEach((player: Player, socket: Websocket) => {
-                socket.send(JSON.stringify({ message: 'Game started', type: 'append', lastCard, nextTurn }))
+                socket.send(JSON.stringify({ message: 'Game started', type: 'append', hasGameStarted:true ,lastCard, nextTurn }))
             })
         }
 
@@ -117,7 +117,6 @@ wss.on("connection", (socket) => {
 
                 room.lastCard = card
                 const removedCardIndex = currPlayer.cards.findIndex((playerCard: Card) => JSON.stringify(playerCard) === JSON.stringify(card))
-                console.log(removedCardIndex);
                 currPlayer.cards.splice(removedCardIndex, 1)
                 socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards }))
 
@@ -168,6 +167,12 @@ wss.on("connection", (socket) => {
             room.players.forEach((player: Player, socket: Websocket) => {
                 socket.send(JSON.stringify({ message: `Player ${currPlayer.name} played a move`, type: 'append', nextTurn: room.nextTurn, lastCard: room.lastCard, players: createPlayersResponse(room) }))
             })
+
+            if (currPlayer.cards.length === 0) {
+                return room.players.forEach((player: Player, socket: Websocket) => {
+                    return socket.send(JSON.stringify({ message: `Player ${currPlayer.name} won the game`, isAnnouncement:true ,type: 'append', lastCard: room.lastCard, players: createPlayersResponse(room) }))
+                })
+            }
         }
 
         console.log(rooms);
@@ -179,7 +184,6 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 // TODO
-// Choose color after wild
 // Game over logic
 // Replenish deck if no more cards available to draw
 // Allow user to draw only one card when receiving correct card

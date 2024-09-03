@@ -5,6 +5,7 @@ import ActionCard from '@/app/components/ActionCard'
 import Card from '@/app/components/Card'
 import NumberCard from '@/app/components/NumberCard'
 import WildCard from '@/app/components/WildCard'
+import { useRouter } from 'next/navigation'
 import { root } from 'postcss'
 import React, { act, useEffect, useState } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
@@ -32,21 +33,30 @@ const Page = () => {
     })
   }, [])
 
+  const router = useRouter()
   useEffect(() => {
     if (!gameData)
       return
-    const activePlayerId = gameData.id
-    const length = gameData.players.length
-    if (length === 2)
-      setTop(activePlayerId === 1 ? 2 : 1)
-    else if (length === 3) {
-      setLeft(activePlayerId + 1 <= length ? activePlayerId + 1 : 1)
-      setTop(activePlayerId + 2 <= length ? activePlayerId + 2 : activePlayerId - 1)
+
+    if (gameData.isAnnouncement) {
+      window.alert(gameData.message)
+      router.push('/')
     }
-    else if (length === 4) {
-      setLeft(activePlayerId + 1 <= length ? activePlayerId + 1 : 1)
-      setTop(activePlayerId + 2 <= length ? activePlayerId + 2 : activePlayerId - 2)
-      setRight(0 < activePlayerId - 1 ? activePlayerId - 1 : length)
+
+    if (!gameData.hasGameStarted) {
+      const activePlayerId = gameData.id
+      const length = gameData.players.length
+      if (length === 2)
+        setTop(activePlayerId === 1 ? 2 : 1)
+      else if (length === 3) {
+        setLeft(activePlayerId + 1 <= length ? activePlayerId + 1 : 1)
+        setTop(activePlayerId + 2 <= length ? activePlayerId + 2 : activePlayerId - 1)
+      }
+      else if (length === 4) {
+        setLeft(activePlayerId + 1 <= length ? activePlayerId + 1 : 1)
+        setTop(activePlayerId + 2 <= length ? activePlayerId + 2 : activePlayerId - 2)
+        setRight(0 < activePlayerId - 1 ? activePlayerId - 1 : length)
+      }
     }
 
     console.log(gameData);
@@ -81,6 +91,7 @@ const Page = () => {
       <div className='flex items-center gap-2'>
         <img className='w-[8vw] h-[22vh] rounded-xl' src="/card.png" alt="" onClick={drawOneCard} />
         {gameData.lastCard ? <Card card={gameData.lastCard} index={0} isCenterCard={true} /> : ''}
+        <div className={`bg-${gameData.lastCard?.color}-500 w-10 h-10 ml-1`}></div>
       </div>
 
       <div>
