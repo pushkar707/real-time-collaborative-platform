@@ -3,7 +3,9 @@ import gameDataAtom from '@/app/atoms/gameDataAtom'
 import Socket from '@/app/atoms/socket'
 import ActionCard from '@/app/components/ActionCard'
 import Card from '@/app/components/Card'
+import CardBackImg from '@/app/components/CardBackImg'
 import NumberCard from '@/app/components/NumberCard'
+import PlayerCards from '@/app/components/PlayerCards'
 import WildCard from '@/app/components/WildCard'
 import { useRouter } from 'next/navigation'
 import { root } from 'postcss'
@@ -81,20 +83,13 @@ const Page = () => {
   }
 
   return (
-    gameData && <div className='flex h-screen items-center flex-col p-12 justify-between relative'>
-      {top ? <div className='flex flex-col justify-center items-center gap-y-1.5'>
-        <div className='flex'>
-          {Array.from({ length: gameData.players.find((pl: any) => pl.id === top).cardsRemaining }).map((_, index) => {
-            return <img className={`w-[8vw] h-[22vh] rounded-xl ${index !== 0 && '-ml-[4.5vw]'}`} src="/card.png" alt="" />
-          })}
-        </div>
-        <p className={`text-center font-medium text-lg mt-1.5 ${gameData.nextTurn === top && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === top).name}</p>
-      </div> : <div></div>}
+    gameData && <div className='flex h-screen items-center flex-col p-6 justify-between relative'>
+      {top ? <PlayerCards positionId={top} orientation={'horizontal'} /> : <div></div>}
 
       <div className='flex items-center gap-2'>
-        <img className='w-[8vw] h-[22vh] rounded-xl' src="/card.png" alt="" onClick={drawOneCard} />
+        <img className='w-32 h-44 rounded-xl' src="/card.png" alt="" onClick={drawOneCard} />
         {gameData.lastCard ? <Card card={gameData.lastCard} index={0} isCenterCard={true} /> : ''}
-        <div className={`bg-${gameData.lastCard?.color}-500 w-10 h-10 ml-1`}></div>
+        {gameData.lastCard ? <div className={`bg-${gameData.lastCard?.color}-500 w-10 h-10 ml-1`}></div> : ''}
       </div>
 
       <div>
@@ -109,23 +104,8 @@ const Page = () => {
         </div>
       </div>
 
-      {left ? <div className='flex absolute left-24 h-[90%] flex-col justify-center items-center gap-y-1.5'>
-        <div>
-          {Array.from({ length: gameData.players.find((pl: any) => pl.id === left).cardsRemaining }).map((_, index) => {
-            return <img className={`w-[8vw] h-[22vh] rounded-xl ${index !== 0 && '-mt-[17vh]'}`} src="/card.png" alt="" />
-          })}
-        </div>
-        <p className={`text-center font-medium text-lg ${gameData.nextTurn === left && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === left).name}</p>
-      </div> : ''}
-
-      {right ? <div className='flex absolute right-24 h-[90%] flex-col justify-center items-center gap-y-1.5'>
-        <div>
-          {Array.from({ length: gameData.players.find((pl: any) => pl.id === right).cardsRemaining }).map((_, index) => {
-            return <img className={`w-[8vw] h-[22vh] rounded-xl ${index !== 0 && '-mt-[17vh]'}`} src="/card.png" alt="" />
-          })}
-        </div>
-        <p className={`text-center font-medium text-lg ${gameData.nextTurn === right && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === right).name}</p>
-      </div> : ''}
+      {left ? <PlayerCards positionId={left} orientation={'vertical'} classes='absolute left-24 h-[90%]' /> : ''}
+      {right ? <PlayerCards positionId={right} orientation={'vertical'} classes='absolute right-24 h-[90%]' /> : ''}
     </div>
   )
 }
