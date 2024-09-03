@@ -19,18 +19,19 @@ const Page = () => {
   const [right, setRight] = useState<number>(0)
 
   useEffect(() => {
+    window.addEventListener('beforeunload', (e) => {
+      e.returnValue = 'You will be exited from the game if you leave';
+    })
+
     socket && (socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
       console.log(data);
 
       data.type === 'new' ? setgameData(data) : data.type === 'append' ? setgameData((prev: any) => {
         return { ...prev, ...data }
-      }) : ''
+      }) : (data.type === 'error') ? window.alert(data.message) : ''
     })
 
-    window.addEventListener('beforeunload', (e) => {
-      e.returnValue = 'You will be exited from the game if you leave';
-    })
   }, [])
 
   const router = useRouter()

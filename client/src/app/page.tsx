@@ -21,6 +21,10 @@ export default function Home() {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
       console.log(data);
+
+      if (data.type === 'error')
+        window.alert(data.message)
+      
       if (data['roomId']) {
         setGameData(data)
         router.push('/game/' + data['roomId'])
@@ -31,7 +35,7 @@ export default function Home() {
   const [name, setName] = useState('')
   const [roomId, setRoomId] = useState('')
 
-  const createRoom = (e: FormEvent<SubmitEvent>) => {
+  const createRoom = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     socket?.send(JSON.stringify({ type: 'create-room', name: roomCreatorName }))
   }
