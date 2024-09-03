@@ -53,7 +53,7 @@ const Card = ({ card, index, isCenterCard = false }: { card: any, index: number,
         </div>
     }
 
-    return <div onClick={makeMove} className={`${index !== 0 && '-ml-16'} ${isEligibleCard && 'move-avaliable'} outline-1 relative border-white border-4 outline-slate-800 outline border-box rounded-xl w-28 text-white h-40`}>
+    return <div onClick={makeMove} className={`${index !== 0 && '-ml-6 md:-ml-10 xl:-ml-16'} ${isEligibleCard && 'move-avaliable'} outline-1 relative border-white border-4 outline-slate-800 outline border-box rounded-xl text-white w-14 h-20 md:w-20 md:h-32 xl:w-28 xl:h-40`}>
         {card.type === 'number' ? <NumberCard color={card.color} number={card.number} /> :
             card.type === 'action' ? <ActionCard action={card.action} color={card.color} /> :
                 card.type === 'wild' ? <WildCard type={card.wild} /> : ''}

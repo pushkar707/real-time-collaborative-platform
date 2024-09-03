@@ -83,11 +83,11 @@ const Page = () => {
   }
 
   return (
-    gameData && <div className='flex h-screen items-center flex-col p-6 justify-between relative'>
+    gameData && <div className='flex h-[90vh] md:h-screen items-center flex-col p-6 justify-between relative'>
       {top ? <PlayerCards positionId={top} orientation={'horizontal'} /> : <div></div>}
 
       <div className='flex items-center gap-2'>
-        <img className='w-32 h-44 rounded-xl' src="/card.png" alt="" onClick={drawOneCard} />
+        <img className='w-16 h-24 md:w-24 md:h-36 xl:w-32 xl:h-44 rounded-xl' src="/card.png" alt="" onClick={drawOneCard} />
         {gameData.lastCard ? <Card card={gameData.lastCard} index={0} isCenterCard={true} /> : ''}
         {gameData.lastCard ? <div className={`bg-${gameData.lastCard?.color}-500 w-10 h-10 ml-1`}></div> : ''}
       </div>
@@ -104,8 +104,8 @@ const Page = () => {
         </div>
       </div>
 
-      {left ? <PlayerCards positionId={left} orientation={'vertical'} classes='absolute left-24 h-[90%]' /> : ''}
-      {right ? <PlayerCards positionId={right} orientation={'vertical'} classes='absolute right-24 h-[90%]' /> : ''}
+      {left ? <PlayerCards positionId={left} orientation={'vertical'} classes='absolute left-4 md:left-12 xl:left-24 h-[90%]' /> : ''}
+      {right ? <PlayerCards positionId={right} orientation={'vertical'} classes='absolute right-4 md:right-12 xl:right-24 h-[90%]' /> : ''}
     </div>
   )
 }

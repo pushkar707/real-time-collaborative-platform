@@ -187,7 +187,6 @@ app.get('/', (req: Request, res: Response) => {
 
 // TODO
 // Debouncing on client to make make new request only once response received
-// responsive UI
 // share link and popup to join the game
 // hosting
 // animations in UI

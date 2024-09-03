@@ -12,7 +12,7 @@ const PlayerCards = ({ positionId, orientation, classes='' }: {positionId: numbe
                     return <CardBackImg orientation={orientation} isFirstImg={index === 0} />
                 })}
             </div>
-            <p className={`text-center font-medium text-lg mt-1.5 ${gameData.nextTurn === top && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === positionId).name}</p>
+            <p className={`text-center font-medium text-lg mt-1.5 max-w-[80px] md:max-w-[145px] xl:max-w-max ${gameData.nextTurn === top && 'font-semibold underline'}`}>{gameData.players.find((pl: any) => pl.id === positionId).name}</p>
         </div>
     )
 }

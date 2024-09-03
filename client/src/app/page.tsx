@@ -13,7 +13,7 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    const socket = new WebSocket('ws://localhost:3000')
+    const socket = new WebSocket('ws://192.168.0.104:3000')
     socket.onopen = () => {
       setsocket(socket)
     }
@@ -48,7 +48,7 @@ export default function Home() {
   if (!socket)
     return 'Loading'
   return (
-    <main className="flex px-4 justify-center flex-col items-center gap-y-7 min-h-screen max-w-screen">
+    <main className="flex px-4 justify-center flex-col items-center gap-y-7 h-[90vh] md:h-auto md:min-h-screen max-w-screen">
       {showCreateRoomPopup ? <div className='absolute w-screen h-screen top-0 left-0 z-10 bg-gray-200 bg-opacity-90 flex justify-center items-center'>
         <form onSubmit={createRoom} className='bg-white px-8 py-6 rounded-md shadow relative pt-9'>
           <span className="absolute top-1 right-2 text-lg font-medium cursor-pointer" onClick={() => setshowCreateRoomPopup(false)}>X</span>
