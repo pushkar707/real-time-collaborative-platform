@@ -177,3 +177,14 @@ wss.on("connection", (socket) => {
 app.get('/', (req: Request, res: Response) => {
     return res.send('API healthy')
 })
+
+// TODO
+// Choose color after wild
+// Game over logic
+// Replenish deck if no more cards available to draw
+// Allow user to draw only one card when receiving correct card
+// Debouncing on client to make make new request only once response received
+// responsive UI
+// share link and popup to join the game
+// hosting
+// animations in UI
