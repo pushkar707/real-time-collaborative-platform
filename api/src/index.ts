@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express"
 import Websocket, { WebSocketServer } from "ws"
 import createRoomId from "./utils/createRoomId";
-import { Deck } from "./utils/Deck";
+import { Deck } from "./utils/deck";
 import { Card, Player, Room, Rooms } from "./utils/interfaces";
 import { createPlayersResponse, getNextTurn, verifyRoomId } from "./utils/utils";
 
@@ -34,8 +34,7 @@ wss.on("connection", (socket) => {
         }
 
         else if (parseMsg.type === 'join-room') {
-            console.log("Room join request");
-            
+
             const roomId = parseMsg.roomId
             // validate roomId
             const room: Room | undefined = rooms.get(roomId);
@@ -95,13 +94,12 @@ wss.on("connection", (socket) => {
                 return socket.send(JSON.stringify({ message: 'Game has not started yet' }))
 
             if (parseMsg.move === 'draw-card') {
-                if(room['cardDrawn'])
-                    return socket.send(JSON.stringify({type: 'error', message: 'You can only draw one card.'}))
+                if (room['cardDrawn'])
+                    return socket.send(JSON.stringify({ type: 'error', message: 'You can only draw one card.' }))
                 // add check user can draw only one card, in-case they receive a correct card
                 const card = room.deck.getOneCard();
                 currPlayer.cards = [...currPlayer.cards, card]
-                room['cardDrawn'] = true
-
+                
                 // checking if users has any card after drawing, if not go to next player
                 let noEligibleCard = true;
                 for (let card of currPlayer.cards) {
@@ -112,8 +110,10 @@ wss.on("connection", (socket) => {
                 }
                 if (noEligibleCard)
                     room.nextTurn = getNextTurn(room)
+                else
+                    room['cardDrawn'] = true
 
-                socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards, cardDrawn:true }))
+                socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards, cardDrawn: room['cardDrawn'] }))
             }
             else if (parseMsg.move === 'throw-card') {
                 room['cardDrawn'] = false
@@ -124,7 +124,7 @@ wss.on("connection", (socket) => {
                 room.deck.throwCard(card)
                 const removedCardIndex = currPlayer.cards.findIndex((playerCard: Card) => JSON.stringify(playerCard) === JSON.stringify(card))
                 currPlayer.cards.splice(removedCardIndex, 1)
-                socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards, cardDrawn:false }))
+                socket.send(JSON.stringify({ type: 'append', cards: currPlayer.cards, cardDrawn: false }))
 
                 // throws an action card
                 if (card.type === 'action') {
@@ -181,8 +181,6 @@ wss.on("connection", (socket) => {
             }
         }
     })
-    console.log('socket connected');
-    
 })
 
 app.get('/', (req: Request, res: Response) => {

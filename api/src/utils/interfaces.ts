@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { Deck } from "./Deck";
+import { Deck } from "./deck";
 
 export interface Card {
     type: 'number' | 'action' | 'wild'

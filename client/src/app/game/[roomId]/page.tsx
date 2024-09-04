@@ -23,7 +23,7 @@ const Page = () => {
   const joinRoom = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!socket) {
-      const socketConnection = new WebSocket('ws://localhost:3000')
+      const socketConnection = new WebSocket(process.env.NEXT_PUBLIC_API_URL || '')
       const { roomId } = params
       socketConnection.onopen = () => {
         setSocket(socketConnection)
@@ -122,7 +122,7 @@ const Page = () => {
           </p>
           <div className='flex'>
             {gameData.cards.map((card: any, index: number) => {
-              return <Card card={card} index={index} />
+              return <Card key={index} card={card} index={index} />
             })}
           </div>
         </div>

@@ -13,7 +13,7 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    const socket = new WebSocket('ws://localhost:3000')
+    const socket = new WebSocket(process.env.NEXT_PUBLIC_API_URL || '')
     socket.onopen = () => {
       setsocket(socket)
     }
