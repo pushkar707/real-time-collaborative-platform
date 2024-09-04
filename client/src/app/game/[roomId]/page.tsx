@@ -55,16 +55,21 @@ const Page = () => {
     })
   }, [socket])
 
-  useEffect(() => {
+  useEffect(() => {    
     if (!gameData)
       return
-
+    
     if (gameData.isAnnouncement) {
+      gameData.gameOver && router.push('/')
+      if (gameData.playerLeft) {
+        setTop(0)
+        setLeft(0)
+        setRight(0)
+      }
       window.alert(gameData.message)
-      router.push('/')
     }
 
-    if (!gameData.hasGameStarted) {
+    if (!gameData.hasGameStarted || gameData.playerLeft) {
       const activePlayerId = gameData.id
       const length = gameData.players.length
       if (length === 2)

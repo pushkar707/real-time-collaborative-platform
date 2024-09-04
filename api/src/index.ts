@@ -99,7 +99,7 @@ wss.on("connection", (socket) => {
                 // add check user can draw only one card, in-case they receive a correct card
                 const card = room.deck.getOneCard();
                 currPlayer.cards = [...currPlayer.cards, card]
-                
+
                 // checking if users has any card after drawing, if not go to next player
                 let noEligibleCard = true;
                 for (let card of currPlayer.cards) {
@@ -176,10 +176,30 @@ wss.on("connection", (socket) => {
 
             if (currPlayer.cards.length === 0) {
                 return room.players.forEach((player: Player, socket: Websocket) => {
-                    return socket.send(JSON.stringify({ message: `Player ${currPlayer.name} won the game`, isAnnouncement: true, type: 'append', lastCard: room.lastCard, players: createPlayersResponse(room) }))
+                    return socket.send(JSON.stringify({ message: `Player ${currPlayer.name} won the game`, gameOver:true, isAnnouncement: true, type: 'append', lastCard: room.lastCard, players: createPlayersResponse(room) }))
                 })
             }
         }
+    })
+
+    socket.on('close', () => {
+        console.log('Socket disconnected');
+        outerLoop: for (const [roomId, room] of rooms.entries()) {
+            for (const [loopSocket, leftPlayer] of room.players.entries()) {
+                if (loopSocket === socket) {
+                    room.players.delete(socket)
+                    if (room.players.size === 0)
+                        rooms.delete(roomId)
+                    else {
+                        room.players.forEach((player: Player, socket: Websocket) => {
+                            return socket.send(JSON.stringify({ message: `Player ${leftPlayer.name} left the game`, playerLeft: true, isAnnouncement: true, type: 'append', players: createPlayersResponse(room) }))
+                        })
+                    }
+                    break outerLoop;
+                }
+            }
+        }
+        console.log(rooms);
     })
 })
 
@@ -189,6 +209,5 @@ app.get('/', (req: Request, res: Response) => {
 
 // TODO
 // Debouncing on client to make make new request only once response received
-// share link and popup to join the game
-// hosting
+// Save gameData in client localstorage to persist data across reloads
 // animations in UI
