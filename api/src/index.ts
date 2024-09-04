@@ -34,6 +34,8 @@ wss.on("connection", (socket) => {
         }
 
         else if (parseMsg.type === 'join-room') {
+            console.log("Room join request");
+            
             const roomId = parseMsg.roomId
             // validate roomId
             const room: Room | undefined = rooms.get(roomId);
@@ -179,6 +181,8 @@ wss.on("connection", (socket) => {
             }
         }
     })
+    console.log('socket connected');
+    
 })
 
 app.get('/', (req: Request, res: Response) => {
