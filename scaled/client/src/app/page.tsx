@@ -52,7 +52,7 @@ export default function Home() {
       {showCreateRoomPopup ? <div className='absolute w-screen h-screen top-0 left-0 z-10 bg-gray-200 bg-opacity-90 flex justify-center items-center'>
         <form onSubmit={createRoom} className='bg-white px-8 py-6 rounded-md shadow relative pt-9'>
           <span className="absolute top-1 right-2 text-lg font-medium cursor-pointer" onClick={() => setshowCreateRoomPopup(false)}>X</span>
-          <input type="text" placeholder="Enter your name" value={roomCreatorName} onChange={e => setRoomCreatorName(e.target.value)} className="px-3 py-2 border border-black" />
+          <input required type="text" placeholder="Enter your name" value={roomCreatorName} onChange={e => setRoomCreatorName(e.target.value)} className="px-3 py-2 border border-black" />
           <button className="bg-black px-3 py-2 text-white block mt-4">Create</button>
         </form>
       </div> : ''}

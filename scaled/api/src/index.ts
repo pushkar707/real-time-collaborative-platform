@@ -16,8 +16,8 @@ const server = http.createServer((req: any, res: any) => {
 const wss = new WebSocketServer({ server })
 
 wss.on("connection", (socket) => {
-    // let roomId: string;
-    // let playerId: number;
+    let roomId: string;
+    let playerId: number;
     socket.on("message", async (message: string) => {
         const parseMsg = JSON.parse(message)
 
@@ -26,32 +26,34 @@ wss.on("connection", (socket) => {
             const deck = new Deck()
             const cards: Card[] = deck.getPlayerCardset()
             const playerName = parseMsg.name
-            const id = 1
-            const player = { name: playerName, cards, id }
+            if (!playerName)
+                return socket.send(JSON.stringify({ type: 'error', message: 'Name is required for joining' }))
+            playerId = 1
+            const player = { name: playerName, cards, id: playerId }
 
             // Creating room and saving its details in-memory
             roomId = await createRoomId()
             const room = { players: [player], deck: deck }
             await setRedisRoom(roomId, room)
 
-            subscriber.subscribe(roomId, (message: string, channel: any) => {
+            await subscriber.subscribe(roomId, (message: string, channel: any) => {
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(message);
                 } else {
-                    console.log(`Client ${id} is not connected or the connection is not open.`);
+                    console.log(`Client ${playerId} is not connected or the connection is not open.`);
                 }
             })
 
-            subscriber.pSubscribe(`${roomId}*${id}`, (message: string, channel: any) => {
+            await subscriber.pSubscribe(`${roomId}*${playerId}`, (message: string, channel: any) => {
                 console.log(message, channel);
 
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(message);
                 } else {
-                    console.log(`Client ${id} is not connected or the connection is not open.`);
+                    console.log(`Client ${playerId} is not connected or the connection is not open.`);
                 }
             })
-            socket.send(JSON.stringify({ message: 'New room created', type: 'new', roomId, name: playerName, id, cards, players: [{ name: player.name, cardsRemaining: player.cards.length }] }))
+            socket.send(JSON.stringify({ message: 'New room created', type: 'new', roomId, name: playerName, id: playerId, cards, players: [{ name: player.name, cardsRemaining: player.cards.length }] }))
         }
 
         else if (parseMsg.type === 'join-room') {
@@ -66,28 +68,30 @@ wss.on("connection", (socket) => {
             // Creating and adding player that just joined
             const cards = room.deck.getPlayerCardset()
             const playerName = parseMsg.name
-            const id = room.players.length + 1
-            room.players.push({ name: playerName, cards, id })
+            if (!playerName)
+                return socket.send(JSON.stringify({ type: 'error', message: 'Name is required for joining' }))
+            playerId = room.players.length + 1
+            room.players.push({ name: playerName, cards, id: playerId })
             await setRedisRoom(roomId, room)
 
-            subscriber.subscribe(roomId, (message: string, channel: any) => {
+            await subscriber.subscribe(roomId, (message: string, channel: any) => {
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(message);
                 } else {
-                    console.log(`Client ${id} is not connected or the connection is not open.`);
+                    console.log(`Client ${playerId} is not connected or the connection is not open.`);
                 }
             })
-            subscriber.pSubscribe(`${roomId}*${id}`, (message: string, channel: any) => {
+            await subscriber.pSubscribe(`${roomId}*${playerId}`, (message: string, channel: any) => {
                 console.log(message, channel);
 
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(message);
                 } else {
-                    console.log(`Client ${id} is not connected or the connection is not open.`);
+                    console.log(`Client ${playerId} is not connected or the connection is not open.`);
                 }
             })
-            socket.send(JSON.stringify({ message: 'Connected to room', type: 'new', roomId, name: playerName, id, cards, players: createPlayersResponse(room) }))
-            publisher.publish(roomId, JSON.stringify({ message: 'Connected to room', type: 'append', roomId, players: createPlayersResponse(room) }))
+            socket.send(JSON.stringify({ message: 'Connected to room', type: 'new', roomId, name: playerName, id: playerId, cards, players: createPlayersResponse(room) }))
+            await publisher.publish(roomId, JSON.stringify({ message: 'Connected to room', type: 'append', roomId, players: createPlayersResponse(room) }))
         }
 
         else if (parseMsg.type === 'start-game') {
@@ -117,7 +121,7 @@ wss.on("connection", (socket) => {
 
             room['hasGameStarted'] = true
             await setRedisRoom(roomId, room)
-            publisher.publish(roomId, JSON.stringify({ message: 'Game started', type: 'append', hasGameStarted: true, lastCard, nextTurn }))
+            await publisher.publish(roomId, JSON.stringify({ message: 'Game started', type: 'append', hasGameStarted: true, lastCard, nextTurn }))
         }
 
         else if (parseMsg.type === 'move') {
@@ -186,7 +190,7 @@ wss.on("connection", (socket) => {
                             if (player.id === nextPlayerId) {
                                 const newCards = [...player.cards, room.deck.getOneCard(), room.deck.getOneCard()]
                                 player.cards = newCards;
-                                publisher.publish(`${roomId}*${player.id}`, JSON.stringify({ type: 'append', cards: newCards }))
+                                await publisher.publish(`${roomId}*${player.id}`, JSON.stringify({ type: 'append', cards: newCards }))
                                 break;
                             }
                         }
@@ -203,7 +207,7 @@ wss.on("connection", (socket) => {
                             if (player.id === nextPlayerId) {
                                 const newCards = [...player.cards, ...room.deck.getFourCards()]
                                 player.cards = newCards;
-                                publisher.publish(`${roomId}*${player.id}`, JSON.stringify({ type: 'append', cards: newCards }))
+                                await publisher.publish(`${roomId}*${player.id}`, JSON.stringify({ type: 'append', cards: newCards }))
                                 break;
                             }
                         }
@@ -216,37 +220,38 @@ wss.on("connection", (socket) => {
             }
 
             await setRedisRoom(roomId, room)
-            publisher.publish(roomId, JSON.stringify({ message: `Player ${currPlayer.name} played a move`, type: 'append', nextTurn: room.nextTurn, lastCard: room.lastCard, players: createPlayersResponse(room) }))
+            await publisher.publish(roomId, JSON.stringify({ message: `Player ${currPlayer.name} played a move`, type: 'append', nextTurn: room.nextTurn, lastCard: room.lastCard, players: createPlayersResponse(room) }))
 
             if (currPlayer.cards.length === 0) {
                 redisClient.hDel('rooms', roomId)
-                publisher.publish(roomId, JSON.stringify({ message: `Player ${currPlayer.name} won the game`, gameOver: true, isAnnouncement: true, type: 'append', lastCard: room.lastCard, players: createPlayersResponse(room) }))
+                await publisher.publish(roomId, JSON.stringify({ message: `Player ${currPlayer.name} won the game`, gameOver: true, isAnnouncement: true, type: 'append', lastCard: room.lastCard, players: createPlayersResponse(room) }))
             }
-        }
-
-        else if (parseMsg.type === 'leave-room') {
-            console.log("Player left the room");
         }
     })
 
-    socket.on('close', () => {
-        // console.log('Socket disconnected');
-        // outerLoop: for (const [roomId, room] of rooms.entries()) {
-        //     for (const [loopSocket, leftPlayer] of room.players.entries()) {
-        //         if (loopSocket === socket) {
-        //             room.deck.returnPlayerCard(leftPlayer.cards)
-        //             room.players.delete(socket)
-        //             if (room.players.size === 0)
-        //                 rooms.delete(roomId)
-        //             else {
-        //                 room.players.forEach((player: Player, socket: WebSocket) => {
-        //                     return socket.send(JSON.stringify({ message: `Player ${leftPlayer.name} left the game`, playerLeft: true, isAnnouncement: true, type: 'append', players: createPlayersResponse(room) }))
-        //                 })
-        //             }
-        //             break outerLoop;
-        //         }
-        //     }
-        // }
+    socket.on('close', async () => {
+        console.log('Socket disconnected');
+        console.log(playerId, roomId);
+
+        const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '')
+        let leftPlayer: Player | undefined;
+        room.players = room.players.filter((player: Player) => {
+            if (player.id === playerId)
+                leftPlayer = player
+            return player.id !== playerId
+        }).map((player: Player, index: number) => {
+            return { ...player, id: index + 1 }
+        })
+        if (!leftPlayer)
+            return
+        room.deck = new Deck(room.deck)
+        room.deck.returnPlayerCard(leftPlayer.cards)
+        if (room.players.length === 0) {
+            await subscriber.unsubscribe(roomId)
+            return await redisClient.hDel('rooms', roomId)
+        }
+        await publisher.publish(roomId, JSON.stringify({ message: `Player ${leftPlayer.name} left the game`, playerLeft: true, isAnnouncement: true, type: 'append', players: createPlayersResponse(room) }))
+        await setRedisRoom(roomId, room)
     })
 })
 
