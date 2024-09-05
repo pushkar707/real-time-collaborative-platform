@@ -16,8 +16,23 @@ export interface Player {
 }
 
 export interface Room {
-    players: Map<WebSocket, Player>;
+    players: Player[];
     deck: Deck;
+    hasGameStarted?: boolean;
+    nextTurn?: number;
+    lastCard?: Card;
+    rotation?: 'clockwise' | 'anticlockwise';
+    cardDrawn?: boolean;
+}
+
+export interface ParsedDeck {
+    deck: Card[];
+    cardsThrown: Card[]
+}
+
+export interface ParsedRoom {
+    players: Player[];
+    deck: ParsedDeck;
     hasGameStarted?: boolean;
     nextTurn?: number;
     lastCard?: Card;

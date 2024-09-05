@@ -38,6 +38,9 @@ const Page = () => {
       e.returnValue = 'You will be exited from the game if you leave';
     }
     window.addEventListener('beforeunload', eventListener)
+    window.addEventListener('unload', () => {
+      socket?.send(JSON.stringify({ type: 'leave-room' }))
+    })
 
     return () => {
       window.removeEventListener('beforeunload', eventListener)
@@ -55,10 +58,10 @@ const Page = () => {
     })
   }, [socket])
 
-  useEffect(() => {    
+  useEffect(() => {
     if (!gameData)
       return
-    
+
     if (gameData.isAnnouncement) {
       gameData.gameOver && router.push('/')
       if (gameData.playerLeft) {
@@ -90,7 +93,7 @@ const Page = () => {
     if (gameData.players.length <= 1)
       return alert('You need 2 to 4 players to start')
 
-    socket?.send(JSON.stringify({ type: 'start-game', roomId: gameData.roomId }))
+    socket?.send(JSON.stringify({ type: 'start-game', roomId: gameData.roomId, playerDetails: { name: gameData.name, cards: gameData.cards, id: gameData.id } }))
   }
 
   const drawOneCard = () => {
@@ -100,7 +103,7 @@ const Page = () => {
 
     if (gameData.cardDrawn)
       return alert('You can only draw one card in a turn')
-    socket?.send(JSON.stringify({ type: 'move', roomId: gameData.roomId, move: 'draw-card' }))
+    socket?.send(JSON.stringify({ type: 'move', roomId: gameData.roomId, move: 'draw-card', playerDetails: { name: gameData.name, cards: gameData.cards, id: gameData.id } }))
   }
 
   return (

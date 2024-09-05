@@ -1,11 +1,16 @@
 import createDeck from "./createDeck"
-import { Card } from "./interfaces"
+import { Card, ParsedDeck } from "./interfaces"
 
 export class Deck {
     private deck: Card[] = []
     private cardsThrown: Card[] = []
 
-    constructor() {
+    constructor(oldDeck?: ParsedDeck) {
+        if (oldDeck) {
+            this.deck = oldDeck.deck
+            this.cardsThrown = oldDeck.cardsThrown
+            return
+        }
         this.deck = createDeck()
     }
 
@@ -54,5 +59,9 @@ export class Deck {
         for (let i = 0; i < 7; i++)
             cards.push(this.getOneCard())
         return cards
+    }
+
+    toParseableObject = () => {
+        return { deck: this.deck, cardsThrown: this.cardsThrown }
     }
 }

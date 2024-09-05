@@ -29,11 +29,11 @@ const Card = ({ card, index, isCenterCard = false }: { card: any, index: number,
             return setShowWildColorPopup(true)
         }
 
-        socket?.send(JSON.stringify({ type: 'move', move: 'throw-card', roomId: gameData.roomId, card }))
+        socket?.send(JSON.stringify({ type: 'move', move: 'throw-card', roomId: gameData.roomId, card, playerDetails: { name: gameData.name, cards: gameData.cards, id: gameData.id } }))
     }
 
     const setWildColorFunc = (color: string) => {
-        socket?.send(JSON.stringify({ type: 'move', move: 'throw-card', roomId: gameData.roomId, card, wildColor: color }))
+        socket?.send(JSON.stringify({ type: 'move', move: 'throw-card', roomId: gameData.roomId, card, wildColor: color, playerDetails: { name: gameData.name, cards: gameData.cards, id: gameData.id } }))
         setShowWildColorPopup(false)
     }
 
