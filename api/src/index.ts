@@ -187,6 +187,7 @@ wss.on("connection", (socket) => {
         outerLoop: for (const [roomId, room] of rooms.entries()) {
             for (const [loopSocket, leftPlayer] of room.players.entries()) {
                 if (loopSocket === socket) {
+                    room.deck.returnPlayerCard(leftPlayer.cards)
                     room.players.delete(socket)
                     if (room.players.size === 0)
                         rooms.delete(roomId)
@@ -199,7 +200,6 @@ wss.on("connection", (socket) => {
                 }
             }
         }
-        console.log(rooms);
     })
 })
 
@@ -209,5 +209,4 @@ app.get('/', (req: Request, res: Response) => {
 
 // TODO
 // Debouncing on client to make make new request only once response received
-// Save gameData in client localstorage to persist data across reloads
 // animations in UI

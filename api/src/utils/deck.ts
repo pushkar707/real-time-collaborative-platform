@@ -19,7 +19,11 @@ export class Deck {
         this.cardsThrown = []
     }
 
-    getOneCard = () => {        
+    returnPlayerCard = (cards: Card[]) => {
+        this.deck.push(...cards)
+    }
+
+    getOneCard = () => {
         if (this.deck.length <= 4) {
             console.log("Deck replensihed");
             this.replensishDeck()
