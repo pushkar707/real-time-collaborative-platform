@@ -3,24 +3,6 @@ import { Deck } from "./deck";
 import { ParsedRoom, Player, Room, Rooms } from "./interfaces";
 import { WebSocket } from "ws"
 
-export const verifyRoomId = async (roomId: string, socket: WebSocket, player: Player) => {
-    // const room: any = rooms.get(roomId);
-    const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '')
-    if (!room) {
-        socket.send(JSON.stringify({ type: 'error', message: 'Invalid room id' }))
-        return
-    }
-
-    const socketVerified = room.players.find((pl: Player) => JSON.stringify(pl) === JSON.stringify(player))
-    if (!socketVerified) {
-        socket.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }))
-        return
-    }
-
-    room.deck = new Deck(room.deck)
-    return room
-}
-
 export const getRoomFromId = async (roomId: string) => {
     const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '')
     room.deck = new Deck(room.deck)

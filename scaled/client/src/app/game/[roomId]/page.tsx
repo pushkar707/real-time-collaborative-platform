@@ -90,7 +90,7 @@ const Page = () => {
     if (gameData.players.length <= 1)
       return alert('You need 2 to 4 players to start')
 
-    socket?.send(JSON.stringify({ type: 'start-game', roomId: gameData.roomId, playerDetails: { name: gameData.name, cards: gameData.cards, id: gameData.id } }))
+    socket?.send(JSON.stringify({ type: 'start-game' }))
   }
 
   const drawOneCard = () => {
@@ -100,7 +100,7 @@ const Page = () => {
 
     if (gameData.cardDrawn)
       return alert('You can only draw one card in a turn')
-    socket?.send(JSON.stringify({ type: 'move', roomId: gameData.roomId, move: 'draw-card', playerDetails: { name: gameData.name, cards: gameData.cards, id: gameData.id } }))
+    socket?.send(JSON.stringify({ type: 'move', move: 'draw-card' }))
   }
 
   return (

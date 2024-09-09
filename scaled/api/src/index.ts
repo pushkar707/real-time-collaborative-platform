@@ -3,7 +3,7 @@ import WebSocket, { WebSocketServer } from "ws"
 import createRoomId from "./utils/createRoomId";
 import { Deck } from "./utils/deck";
 import { Card, Player, Room, Rooms } from "./utils/interfaces";
-import { createPlayersResponse, getNextTurn, getRoomFromId, newPlayersDetails, setRedisRoom, verifyRoomId } from "./utils/utils";
+import { createPlayersResponse, getNextTurn, getRoomFromId, newPlayersDetails, setRedisRoom } from "./utils/utils";
 import { createClient } from "redis"
 
 export const redisClient = createClient()
@@ -122,16 +122,13 @@ wss.on("connection", (socket) => {
         }
 
         else if (parseMsg.type === 'move') {
-            const roomId = parseMsg.roomId
-            const currPlayer: Player = parseMsg.playerDetails
-            const room: Room | undefined = await verifyRoomId(roomId, socket, currPlayer)
+            const room: Room | undefined = await await getRoomFromId(roomId)
             if (!room)
                 return
+            
+            const currPlayer: Player | undefined = room.players.find(pl => pl.id === playerId)
 
-            if (!currPlayer || currPlayer.id !== room.nextTurn)
-                return socket.send(JSON.stringify({ message: 'Invalid turn' }))
-
-            if (!room.hasGameStarted || !room.lastCard)
+            if (!currPlayer ||!room.hasGameStarted || !room.lastCard)
                 return socket.send(JSON.stringify({ message: 'Game has not started yet' }))
 
             if (parseMsg.move === 'draw-card') {
@@ -220,14 +217,17 @@ wss.on("connection", (socket) => {
             await publisher.publish(roomId, JSON.stringify({ message: `Player ${currPlayer.name} played a move`, type: 'append', nextTurn: room.nextTurn, lastCard: room.lastCard, players: createPlayersResponse(room) }))
 
             if (currPlayer.cards.length === 0) {
-                redisClient.hDel('rooms', roomId)
+                await redisClient.hDel('rooms', roomId)
                 await publisher.publish(roomId, JSON.stringify({ message: `Player ${currPlayer.name} won the game`, gameOver: true, isAnnouncement: true, type: 'append', lastCard: room.lastCard, players: createPlayersResponse(room) }))
+                await subscriber.unsubscribe(roomId);
             }
         }
     })
 
     socket.on('close', async () => {
         console.log('Socket disconnected');
+        if(!roomId || !playerId)
+            return
         const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '')
         let leftPlayer: Player | undefined;
 

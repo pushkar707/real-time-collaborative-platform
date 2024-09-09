@@ -15,7 +15,6 @@ export class Deck {
     }
 
     throwCard = (card: Card) => {
-        console.log(this.deck.length);
         this.cardsThrown.push(card)
     }
 
@@ -26,7 +25,6 @@ export class Deck {
 
     returnPlayerCard = (cards: Card[]) => {
         this.deck.push(...cards)
-        console.log(this.deck.length);
     }
 
     getOneCard = () => {
