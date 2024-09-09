@@ -3,7 +3,7 @@ import WebSocket, { WebSocketServer } from "ws"
 import createRoomId from "./utils/createRoomId";
 import { Deck } from "./utils/deck";
 import { Card, Player, Room, Rooms } from "./utils/interfaces";
-import { createPlayersResponse, getNextTurn, newPlayersDetails, setRedisRoom, verifyRoomId } from "./utils/utils";
+import { createPlayersResponse, getNextTurn, getRoomFromId, newPlayersDetails, setRedisRoom, verifyRoomId } from "./utils/utils";
 import { createClient } from "redis"
 
 export const redisClient = createClient()
@@ -95,15 +95,12 @@ wss.on("connection", (socket) => {
         }
 
         else if (parseMsg.type === 'start-game') {
-            const roomId = parseMsg.roomId
-            const currPlayer: Player = parseMsg.playerDetails
-
-            if (currPlayer.id !== 1) {
+            if (playerId !== 1) {
                 socket.send(JSON.stringify({ type: 'error', message: 'You cannot start the game' }))
                 return
             }
 
-            const room: Room | undefined = await verifyRoomId(roomId, socket, currPlayer)
+            const room: Room | undefined = await getRoomFromId(roomId)
             if (!room)
                 return
 
@@ -231,10 +228,9 @@ wss.on("connection", (socket) => {
 
     socket.on('close', async () => {
         console.log('Socket disconnected');
-        console.log(playerId, roomId);
-
         const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '')
         let leftPlayer: Player | undefined;
+
         room.players = room.players.filter((player: Player) => {
             if (player.id === playerId)
                 leftPlayer = player
@@ -242,14 +238,15 @@ wss.on("connection", (socket) => {
         }).map((player: Player, index: number) => {
             return { ...player, id: index + 1 }
         })
-        if (!leftPlayer)
-            return
-        room.deck = new Deck(room.deck)
-        room.deck.returnPlayerCard(leftPlayer.cards)
         if (room.players.length === 0) {
             await subscriber.unsubscribe(roomId)
             return await redisClient.hDel('rooms', roomId)
         }
+
+        if (!leftPlayer)
+            return
+        room.deck = new Deck(room.deck)
+        room.deck.returnPlayerCard(leftPlayer.cards)
         await publisher.publish(roomId, JSON.stringify({ message: `Player ${leftPlayer.name} left the game`, playerLeft: true, isAnnouncement: true, type: 'append', players: createPlayersResponse(room) }))
         await setRedisRoom(roomId, room)
     })
@@ -267,5 +264,6 @@ const startServer = async () => {
 startServer()
 
 // TODO
+// Add pub-sub for modifying id at the top after player left
 // Debouncing on client to make make new request only once response received
 // animations in UI

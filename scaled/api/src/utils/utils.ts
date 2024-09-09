@@ -3,7 +3,7 @@ import { Deck } from "./deck";
 import { ParsedRoom, Player, Room, Rooms } from "./interfaces";
 import { WebSocket } from "ws"
 
-export const verifyRoomId = async (roomId: string, socket: WebSocket, player: Player) => {   
+export const verifyRoomId = async (roomId: string, socket: WebSocket, player: Player) => {
     // const room: any = rooms.get(roomId);
     const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '')
     if (!room) {
@@ -17,6 +17,12 @@ export const verifyRoomId = async (roomId: string, socket: WebSocket, player: Pl
         return
     }
 
+    room.deck = new Deck(room.deck)
+    return room
+}
+
+export const getRoomFromId = async (roomId: string) => {
+    const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '')
     room.deck = new Deck(room.deck)
     return room
 }
@@ -39,13 +45,13 @@ export const getNextTurn = (room: Room) => {
         return room.nextTurn === 1 ? room.players.length : room.nextTurn - 1
 }
 
-export const setRedisRoom = async(roomId: string, room: Room) => {
-    await redisClient.hSet('rooms', roomId, JSON.stringify({...room, deck: room.deck.toParseableObject() }))
+export const setRedisRoom = async (roomId: string, room: Room) => {
+    await redisClient.hSet('rooms', roomId, JSON.stringify({ ...room, deck: room.deck.toParseableObject() }))
 }
 
-export const newPlayersDetails = (room:Room, currPlayer:Player) => {
+export const newPlayersDetails = (room: Room, currPlayer: Player) => {
     return room.players.map((pl: Player) => {
-        if(pl.id === currPlayer.id){
+        if (pl.id === currPlayer.id) {
             return currPlayer
         }
         return pl
