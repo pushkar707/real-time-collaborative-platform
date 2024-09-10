@@ -3,6 +3,7 @@ import gameDataAtom from '@/app/atoms/gameDataAtom'
 import Socket from '@/app/atoms/socket'
 import Card from '@/app/components/Card'
 import PlayerCards from '@/app/components/PlayerCards'
+import { connectSocket } from '@/app/utils'
 import { useRouter, useParams } from 'next/navigation'
 import React, { FormEvent, useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
@@ -22,14 +23,10 @@ const Page = () => {
 
   const joinRoom = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const { roomId } = params
     if (!socket) {
-      const socketConnection = new WebSocket(process.env.NEXT_PUBLIC_API_URL || '')
-      const { roomId } = params
-      socketConnection.onopen = () => {
-        setSocket(socketConnection)
-        socketConnection.send(JSON.stringify({ type: 'join-room', roomId, name: roomJoineeName }))
-        setshowJoinRoomPopup(false)
-      }
+      connectSocket(setSocket, setgameData, router, JSON.stringify({ type: 'join-room', roomId, name: roomJoineeName }))
+      setshowJoinRoomPopup(false)
     }
   }
 
@@ -43,17 +40,6 @@ const Page = () => {
       window.removeEventListener('beforeunload', eventListener)
     }
   }, [])
-
-  useEffect(() => {
-    socket && (socket.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      console.log(data);
-
-      data.type === 'new' ? setgameData(data) : data.type === 'append' ? setgameData((prev: any) => {
-        return { ...prev, ...data }
-      }) : (data.type === 'error') ? window.alert(data.message) : ''
-    })
-  }, [socket])
 
   useEffect(() => {
     if (!gameData)

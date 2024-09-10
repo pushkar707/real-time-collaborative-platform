@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { useRecoilState, useSetRecoilState } from "recoil"
 import Socket from "./atoms/socket"
 import gameDataAtom from "./atoms/gameDataAtom"
+import { connectSocket } from "./utils"
 
 export default function Home() {
   const [socket, setsocket] = useRecoilState(Socket)
@@ -12,41 +13,19 @@ export default function Home() {
   const [roomCreatorName, setRoomCreatorName] = useState('')
   const router = useRouter()
 
-  useEffect(() => {
-    const socket = new WebSocket(process.env.NEXT_PUBLIC_API_URL || '')
-    socket.onopen = () => {
-      setsocket(socket)
-    }
-
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      console.log(data);
-
-      if (data.type === 'error')
-        window.alert(data.message)
-      
-      if (data['roomId']) {
-        setGameData(data)
-        router.push('/game/' + data['roomId'])
-      }
-    }
-  }, [])
-
   const [name, setName] = useState('')
   const [roomId, setRoomId] = useState('')
 
   const createRoom = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    socket?.send(JSON.stringify({ type: 'create-room', name: roomCreatorName }))
+    connectSocket(setsocket, setGameData, router, JSON.stringify({ type: 'create-room', name: roomCreatorName }))
   }
 
   const joinRoom = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    socket?.send(JSON.stringify({ type: 'join-room', roomId, name }))
+    connectSocket(setsocket, setGameData, router, JSON.stringify({ type: 'join-room', roomId, name }))
   }
 
-  if (!socket)
-    return 'Loading'
   return (
     <main className="flex px-4 justify-center flex-col items-center gap-y-7 h-[90vh] md:h-auto md:min-h-screen max-w-screen">
       {showCreateRoomPopup ? <div className='absolute w-screen h-screen top-0 left-0 z-10 bg-gray-200 bg-opacity-90 flex justify-center items-center'>

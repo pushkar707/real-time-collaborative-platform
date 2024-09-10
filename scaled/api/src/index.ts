@@ -238,12 +238,12 @@ wss.on("connection", (socket: WebSocket) => {
         }).map((player: Player, index: number) => {
             return { ...player, id: index + 1 }
         })
-        
+
         if (room.players.length === 0) {
             await subscriber.unsubscribe(roomId)
             return await redisClient.hDel('rooms', roomId)
         }
-        
+
         if (!leftPlayer)
             return
         room.deck.returnPlayerCard(leftPlayer.cards)
