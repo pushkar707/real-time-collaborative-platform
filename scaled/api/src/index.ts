@@ -91,7 +91,7 @@ wss.on("connection", (socket: WebSocket) => {
                 }
             })
             socket.send(JSON.stringify({ message: 'Connected to room', type: 'new', roomId, name: playerName, id: playerId, cards, players: createPlayersResponse(room) }))
-            await publisher.publish(roomId, JSON.stringify({ message: 'Connected to room', type: 'append', roomId, players: createPlayersResponse(room) }))
+            await publisher.publish(roomId, JSON.stringify({ message: 'Connected to room', type: 'append', players: createPlayersResponse(room) }))
         }
 
         else if (parseMsg.type === 'start-game') {
@@ -222,6 +222,38 @@ wss.on("connection", (socket: WebSocket) => {
                 await subscriber.unsubscribe(roomId);
             }
         }
+
+        else if (parseMsg.type === 'reconnect') { // restore game state if server restarts 
+            console.log(parseMsg);            
+            roomId = parseMsg.prevRoomId
+            playerId = parseInt(parseMsg.prevPlayerId)
+
+            const room: Room = await getRoomFromId(roomId)
+            if (!room)
+                return socket.send(JSON.stringify({ type: 'error', message: 'Could not find the game, please start a new game' }))
+
+            const player = room.players.find(pl => pl.id == playerId)
+            if (!player)
+                return socket.send(JSON.stringify({ type: 'error', message: 'Invalid reconnect request' }))
+            await subscriber.subscribe(roomId, (message: string, channel: any) => {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(message);
+                } else {
+                    console.log(`Client ${playerId} is not connected or the connection is not open.`);
+                }
+            })
+            await subscriber.pSubscribe(`${roomId}*${playerId}`, (message: string, channel: any) => {
+                console.log(message, channel);
+
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(message);
+                } else {
+                    console.log(`Client ${playerId} is not connected or the connection is not open.`);
+                }
+            })
+
+            socket.send(JSON.stringify({ message: 'Re-connected to room', type: 'new', lastCard: room.lastCard, hasGameStarted: room.hasGameStarted, cardDrawn: room.cardDrawn, nextTurn: room.nextTurn, roomId, name: player.name, id: playerId, cards: player.cards, players: createPlayersResponse(room) }))
+        }
     })
 
     socket.on('close', async () => {
@@ -229,6 +261,8 @@ wss.on("connection", (socket: WebSocket) => {
         if (!roomId || !playerId)
             return
         const room = await getRoomFromId(roomId)
+        if(!room)
+            return
         let leftPlayer: Player | undefined;
 
         room.players = room.players.filter((player: Player) => {

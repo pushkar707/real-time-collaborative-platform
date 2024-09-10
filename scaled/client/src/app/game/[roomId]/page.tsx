@@ -47,6 +47,8 @@ const Page = () => {
 
     if (gameData.isAnnouncement) {
       gameData.gameOver && router.push('/')
+      localStorage.removeItem('roomId')
+      localStorage.removeItem('playerId')
       if (gameData.playerLeft) {
         setTop(0)
         setLeft(0)

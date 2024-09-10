@@ -4,7 +4,9 @@ import { ParsedRoom, Player, Room, Rooms } from "./interfaces";
 import { WebSocket } from "ws"
 
 export const getRoomFromId = async (roomId: string) => {
-    const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '')
+    const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '{}')
+    if(!room.deck) // to check that room is not an empty object
+        return
     room.deck = new Deck(room.deck)
     return room
 }
