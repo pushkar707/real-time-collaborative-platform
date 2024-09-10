@@ -15,9 +15,10 @@ const server = http.createServer((req: any, res: any) => {
 
 const wss = new WebSocketServer({ server })
 
-wss.on("connection", (socket) => {
+wss.on("connection", (socket: WebSocket) => {
     let roomId: string;
     let playerId: number;
+
     socket.on("message", async (message: string) => {
         const parseMsg = JSON.parse(message)
 
@@ -59,12 +60,11 @@ wss.on("connection", (socket) => {
         else if (parseMsg.type === 'join-room') {
             const joiningRroomId = parseMsg.roomId
             // validate roomId
-            const room = JSON.parse(await redisClient.hGet('rooms', joiningRroomId) || '');
+            const room = await getRoomFromId(joiningRroomId)
             if (!room || room.hasGameStarted)
                 return socket.send(JSON.stringify({ type: 'error', message: 'Invalid room id' }))
 
             roomId = joiningRroomId
-            room.deck = new Deck(room?.deck)
             // Creating and adding player that just joined
             const cards = room.deck.getPlayerCardset()
             const playerName = parseMsg.name
@@ -125,10 +125,10 @@ wss.on("connection", (socket) => {
             const room: Room | undefined = await await getRoomFromId(roomId)
             if (!room)
                 return
-            
+
             const currPlayer: Player | undefined = room.players.find(pl => pl.id === playerId)
 
-            if (!currPlayer ||!room.hasGameStarted || !room.lastCard)
+            if (!currPlayer || !room.hasGameStarted || !room.lastCard)
                 return socket.send(JSON.stringify({ message: 'Game has not started yet' }))
 
             if (parseMsg.move === 'draw-card') {
@@ -226,9 +226,9 @@ wss.on("connection", (socket) => {
 
     socket.on('close', async () => {
         console.log('Socket disconnected');
-        if(!roomId || !playerId)
+        if (!roomId || !playerId)
             return
-        const room = JSON.parse(await redisClient.hGet('rooms', roomId) || '')
+        const room = await getRoomFromId(roomId)
         let leftPlayer: Player | undefined;
 
         room.players = room.players.filter((player: Player) => {
@@ -238,14 +238,14 @@ wss.on("connection", (socket) => {
         }).map((player: Player, index: number) => {
             return { ...player, id: index + 1 }
         })
+        
         if (room.players.length === 0) {
             await subscriber.unsubscribe(roomId)
             return await redisClient.hDel('rooms', roomId)
         }
-
+        
         if (!leftPlayer)
             return
-        room.deck = new Deck(room.deck)
         room.deck.returnPlayerCard(leftPlayer.cards)
         await publisher.publish(roomId, JSON.stringify({ message: `Player ${leftPlayer.name} left the game`, playerLeft: true, isAnnouncement: true, type: 'append', players: createPlayersResponse(room) }))
         await setRedisRoom(roomId, room)
@@ -263,7 +263,15 @@ const startServer = async () => {
 
 startServer()
 
-// TODO
+// PROJECT TODOS
+// host the projects using AWS ASGs, and aiven redis
+// state management in application, especially when updating servers
+// Add voice call between sockets using webRTC
+// Add testing and monitoring for backend
+// Host the application using k8s
+
+
+// POLISHING TODOS
 // Add pub-sub for modifying id at the top after player left
 // Debouncing on client to make make new request only once response received
 // animations in UI
