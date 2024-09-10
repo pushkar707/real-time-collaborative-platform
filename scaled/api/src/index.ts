@@ -46,7 +46,6 @@ wss.on("connection", (socket: WebSocket) => {
             })
 
             await subscriber.pSubscribe(`${roomId}*${playerId}`, (message: string, channel: any) => {
-                console.log(message, channel);
 
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(message);
@@ -82,7 +81,6 @@ wss.on("connection", (socket: WebSocket) => {
                 }
             })
             await subscriber.pSubscribe(`${roomId}*${playerId}`, (message: string, channel: any) => {
-                console.log(message, channel);
 
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(message);
@@ -236,20 +234,16 @@ wss.on("connection", (socket: WebSocket) => {
             if (!player)
                 return socket.send(JSON.stringify({ type: 'error', message: 'Invalid reconnect request' }))
             await subscriber.subscribe(roomId, (message: string, channel: any) => {
-                if (socket.readyState === WebSocket.OPEN) {
+                if (socket.readyState === WebSocket.OPEN)
                     socket.send(message);
-                } else {
+                else
                     console.log(`Client ${playerId} is not connected or the connection is not open.`);
-                }
             })
             await subscriber.pSubscribe(`${roomId}*${playerId}`, (message: string, channel: any) => {
-                console.log(message, channel);
-
-                if (socket.readyState === WebSocket.OPEN) {
+                if (socket.readyState === WebSocket.OPEN)
                     socket.send(message);
-                } else {
+                else
                     console.log(`Client ${playerId} is not connected or the connection is not open.`);
-                }
             })
 
             socket.send(JSON.stringify({ message: 'Re-connected to room', type: 'new', lastCard: room.lastCard, hasGameStarted: room.hasGameStarted, cardDrawn: room.cardDrawn, nextTurn: room.nextTurn, roomId, name: player.name, id: playerId, cards: player.cards, players: createPlayersResponse(room) }))
