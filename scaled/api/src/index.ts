@@ -5,10 +5,12 @@ import { Deck } from "./utils/deck";
 import { Card, Player, Room, Rooms } from "./utils/interfaces";
 import { createPlayersResponse, getNextTurn, getRoomFromId, newPlayersDetails, setRedisRoom } from "./utils/utils";
 import { createClient } from "redis"
+import dotenv from "dotenv"
+dotenv.config()
 
-export const redisClient = createClient()
-const publisher = createClient()
-const subscriber = createClient()
+export const redisClient = createClient({ url: process.env.REDIS_URL })
+const publisher = createClient({ url: process.env.REDIS_URL })
+const subscriber = createClient({ url: process.env.REDIS_URL })
 const server = http.createServer((req: any, res: any) => {
     res.end('Hi there')
 })
@@ -222,7 +224,7 @@ wss.on("connection", (socket: WebSocket) => {
         }
 
         else if (parseMsg.type === 'reconnect') { // restore game state if server restarts 
-            console.log(parseMsg);            
+            console.log(parseMsg);
             roomId = parseMsg.prevRoomId
             playerId = parseInt(parseMsg.prevPlayerId)
 
@@ -255,7 +257,7 @@ wss.on("connection", (socket: WebSocket) => {
         if (!roomId || !playerId)
             return
         const room = await getRoomFromId(roomId)
-        if(!room)
+        if (!room)
             return
         let leftPlayer: Player | undefined;
 
@@ -293,7 +295,6 @@ startServer()
 
 // PROJECT TODOS
 // host the projects using AWS ASGs, and aiven redis
-// state management in application, especially when updating servers
 // Add voice call between sockets using webRTC
 // Add testing and monitoring for backend
 // Host the application using k8s
