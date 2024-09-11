@@ -328,7 +328,6 @@ const startServer = async () => {
 startServer()
 
 // PROJECT TODOS
-// send socket response after completing redis stuff, so that user doesn't keep making requests
 // Debouncing on client to make make new request only once response received
 // host the projects using AWS ASGs, and aiven redis
 // Add voice call between sockets using webRTC

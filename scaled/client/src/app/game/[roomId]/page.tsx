@@ -46,15 +46,17 @@ const Page = () => {
       return
 
     if (gameData.isAnnouncement) {
-      gameData.gameOver && router.push('/')
-      localStorage.removeItem('roomId')
-      localStorage.removeItem('playerId')
+      window.alert(gameData.message)
+      if(gameData.gameOver){
+        localStorage.removeItem('roomId')
+        localStorage.removeItem('playerId')
+        router.push('/')
+      }
       if (gameData.playerLeft) {
         setTop(0)
         setLeft(0)
         setRight(0)
       }
-      window.alert(gameData.message)
     }
 
     if (!gameData.hasGameStarted || gameData.playerLeft) {
