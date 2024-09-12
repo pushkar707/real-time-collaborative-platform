@@ -12,15 +12,17 @@ dotenv.config()
 export const redisClient = createClient({ url: process.env.REDIS_URL })
 const publisher = createClient({ url: process.env.REDIS_URL })
 const subscriber = createClient({ url: process.env.REDIS_URL })
+const connections:any[] = []
 const server = http.createServer((req: any, res: any) => {
-    res.end('Hi there')
+    res.end(JSON.stringify(connections))
 })
 
 const wss = new WebSocketServer({ server })
 
 wss.on("connection", (socket: WebSocket) => {
-    let roomId: string;
-    let playerId: number;
+    let roomId: string = '';
+    let playerId: number = 0;
+    connections.push({ roomId, playerId })
     let isProcessingRequest = false
     console.log("socket connected");
 
