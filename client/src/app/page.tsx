@@ -24,7 +24,7 @@ export default function Home() {
 
       if (data.type === 'error')
         window.alert(data.message)
-      
+
       if (data['roomId']) {
         setGameData(data)
         router.push('/game/' + data['roomId'])

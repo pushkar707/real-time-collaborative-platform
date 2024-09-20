@@ -55,10 +55,10 @@ const Page = () => {
     })
   }, [socket])
 
-  useEffect(() => {    
+  useEffect(() => {
     if (!gameData)
       return
-    
+
     if (gameData.isAnnouncement) {
       gameData.gameOver && router.push('/')
       if (gameData.playerLeft) {
@@ -120,11 +120,16 @@ const Page = () => {
           {gameData.lastCard ? <div className={`bg-${gameData.lastCard?.color}-500 w-10 h-10 ml-1`}></div> : ''}
         </div>
 
-        <div>
-          <p className={`text-center font-medium text-lg mb-2 ${gameData.nextTurn === gameData.id && 'font-semibold underline'}`}>
-            {gameData.name}
-            {(!gameData.nextTurn && (gameData.id === 1)) ? <button onClick={startGame} className='px-2 py-1 bg-blue-500 text-white ml-3 rounded'>Start game</button> : ''}
-          </p>
+        <div className='flex flex-col items-center'>
+          <div>
+            <p className={`text-center font-medium text-lg mb-1 ${gameData.nextTurn === gameData.id && 'font-semibold underline'}`}>
+              {gameData.name}
+            </p>
+            {(!gameData.nextTurn && (gameData.id === 1)) ? <div className='flex flex-col items-center mb-2 gap-y-1.5'>
+              <button onClick={startGame} className='px-2 py-1 bg-blue-500 text-white rounded'>Start game</button>
+              <p>Click <span className='underline cursor-pointer' onClick={() => { navigator.clipboard.writeText(window.location.href); alert('Copied to clipbaord!') }}>here</span> to copy room link or ask your friends to join this roomId: </p>
+            </div> : ''}
+          </div>
           <div className='flex'>
             {gameData.cards.map((card: any, index: number) => {
               return <Card key={index} card={card} index={index} />

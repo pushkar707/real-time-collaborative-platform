@@ -331,10 +331,17 @@ startServer()
 
 // PROJECT TODOS
 // Debouncing on client to make make new request only once response received
-// host the projects using AWS ASGs, and aiven redis
 // Add voice call between sockets using webRTC
 // Add testing and monitoring for backend
 // Host the application using k8s
+
+// whats wrong in hosting online
+// reconnect not working as the when socket closes its data is deleted from redis, hence that socket isn't able to reconnect, what more is it starts a chain reaction where all the other sockets start trying to reconnect but aren't, they are one-by-one removed from redis, and finally the room is destroyed
+// socket connection get closed and reconnected if no communication happens for a few minutes -> SOLTUION -> ping/pong from application/server level every 30s, SOLUTION in hosting - increase load balancer idle timeout from 60s, avoid heavy termination of instances by ASG by selecting one availablity zone, and scaling policies, 
+
+// Geeneral problems in ci/cd hosting
+// CI/CD, updates are very hard
+// unable to see logs of every node in ASG
 
 
 // POLISHING TODOS
