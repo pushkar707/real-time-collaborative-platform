@@ -127,7 +127,7 @@ const Page = () => {
             </p>
             {(!gameData.nextTurn && (gameData.id === 1)) ? <div className='flex flex-col items-center mb-2 gap-y-1.5'>
               <button onClick={startGame} className='px-2 py-1 bg-blue-500 text-white rounded'>Start game</button>
-              <p>Click <span className='underline cursor-pointer' onClick={() => { navigator.clipboard.writeText(window.location.href); alert('Copied to clipbaord!') }}>here</span> to copy room link or ask your friends to join this roomId: </p>
+              <p>Click <span className='underline cursor-pointer' onClick={() => { navigator.clipboard.writeText(window.location.href); alert('Copied to clipbaord!') }}>here</span> to copy room link or ask your friends to join this roomId: {gameData.roomId}</p>
             </div> : ''}
           </div>
           <div className='flex'>
